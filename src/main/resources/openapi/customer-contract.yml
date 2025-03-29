@@ -1,0 +1,388 @@
+openapi: 3.0.3
+info:
+  title: Customer Service API
+  description: |
+    API para gestión de clientes bancarios (personales y empresariales).
+    Permite el CRUD completo de clientes con validaciones específicas.
+  version: 1.0.0
+  contact:
+    name: Equipo Bancario
+    email: desarrollo@nttdata.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://api.bank.com/customer-service/v1
+    description: Servidor de producción
+  - url: http://localhost:8081/api/v1
+    description: Servidor local de desarrollo
+
+tags:
+  - name: Customers
+    description: Operaciones con clientes bancarios
+  - name: CustomerValidation
+    description: Validaciones de información de clientes
+
+paths:
+  /customers:
+    get:
+      tags: [Customers]
+      summary: Listar todos los clientes
+      description: Retorna una lista paginada de todos los clientes registrados
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/sizeParam'
+      responses:
+        '200':
+          description: Lista de clientes obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerPage'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags: [Customers]
+      summary: Crear un nuevo cliente
+      description: |
+        Registra un nuevo cliente en el sistema con validación de:
+        - Tipo de documento único
+        - Campos obligatorios
+        - Formato de email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerCreate'
+            example:
+              name: "Empresa XYZ S.A."
+              type: "BUSINESS"
+              docType: "RUC"
+              docNumber: "20123456789"
+              address:
+                street: "Av. Principal 123"
+                city: "Lima"
+                country: "Perú"
+              email: "contacto@empresa.com"
+              phone: "+51987654321"
+      responses:
+        '201':
+          description: Cliente creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URL del nuevo recurso creado
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Conflicto - El documento ya está registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /customers/{customerId}:
+    get:
+      tags: [Customers]
+      summary: Obtener detalles de un cliente
+      parameters:
+        - $ref: '#/components/parameters/customerIdParam'
+      responses:
+        '200':
+          description: Detalles del cliente obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      tags: [Customers]
+      summary: Actualizar un cliente existente
+      description: Actualiza la información de un cliente manteniendo el tipo y documento
+      parameters:
+        - $ref: '#/components/parameters/customerIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerUpdate'
+      responses:
+        '200':
+          description: Cliente actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Customers]
+      summary: Eliminar un cliente
+      description: |
+        Elimina un cliente del sistema.
+        Validar que no tenga productos asociados antes de eliminar.
+      parameters:
+        - $ref: '#/components/parameters/customerIdParam'
+      responses:
+        '204':
+          description: Cliente eliminado exitosamente
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Conflicto - El cliente tiene productos asociados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /customers/validate/document:
+    post:
+      tags: [CustomerValidation]
+      summary: Validar documento único
+      description: Verifica si un documento ya está registrado en el sistema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                docType:
+                  type: string
+                  enum: [DNI, RUC, CE, PASSPORT]
+                docNumber:
+                  type: string
+              required: [docType, docNumber]
+      responses:
+        '200':
+          description: Resultado de la validación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  available:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+components:
+  schemas:
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          example: "5f8d8a7b2f4d4b1d9c3e3f1a"
+        name:
+          type: string
+          example: "Empresa XYZ S.A."
+        type:
+          type: string
+          enum: [PERSONAL, BUSINESS]
+          example: "BUSINESS"
+        docType:
+          type: string
+          enum: [DNI, RUC, CE, PASSPORT]
+          example: "RUC"
+        docNumber:
+          type: string
+          example: "20123456789"
+        address:
+          $ref: '#/components/schemas/Address'
+        email:
+          type: string
+          format: email
+          example: "contacto@empresa.com"
+        phone:
+          type: string
+          example: "+51987654321"
+        createdAt:
+          type: string
+          format: date-time
+          readOnly: true
+          example: "2023-01-15T10:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          readOnly: true
+          example: "2023-01-15T10:00:00Z"
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, PENDING]
+          default: "ACTIVE"
+          example: "ACTIVE"
+      required:
+        - name
+        - type
+        - docType
+        - docNumber
+        - email
+
+    CustomerCreate:
+      allOf:
+        - $ref: '#/components/schemas/Customer'
+        - type: object
+          properties:
+            password:
+              type: string
+              format: password
+              minLength: 8
+              maxLength: 20
+              example: "Str0ngP@ss"
+          required:
+            - password
+
+    CustomerUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Empresa XYZ S.A. Renovada"
+        address:
+          $ref: '#/components/schemas/Address'
+        email:
+          type: string
+          format: email
+          example: "nuevo-contacto@empresa.com"
+        phone:
+          type: string
+          example: "+51987654322"
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+          example: "Av. Principal 123"
+        city:
+          type: string
+          example: "Lima"
+        state:
+          type: string
+          example: "Lima"
+        country:
+          type: string
+          example: "Perú"
+        postalCode:
+          type: string
+          example: "15001"
+      required:
+        - street
+        - city
+        - country
+
+    CustomerPage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Customer'
+        page:
+          type: integer
+          example: 0
+        size:
+          type: integer
+          example: 20
+        totalElements:
+          type: integer
+          example: 100
+        totalPages:
+          type: integer
+          example: 5
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-01-15T10:00:00Z"
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "El documento ya está registrado"
+        path:
+          type: string
+          example: "/api/v1/customers"
+
+  parameters:
+    customerIdParam:
+      name: customerId
+      in: path
+      required: true
+      description: ID único del cliente
+      schema:
+        type: string
+        format: uuid
+        example: "5f8d8a7b2f4d4b1d9c3e3f1a"
+
+    pageParam:
+      name: page
+      in: query
+      description: Número de página (0-based)
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+
+    sizeParam:
+      name: size
+      in: query
+      description: Tamaño de la página
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    BadRequest:
+      description: Solicitud inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalServerError:
+      description: Error interno del servidor
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
