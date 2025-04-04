@@ -30,6 +30,7 @@ paths:
       tags: [Customers]
       summary: Listar todos los clientes
       description: Retorna una lista paginada de todos los clientes registrados
+      operationId: findAll
       parameters:
         - $ref: '#/components/parameters/pageParam'
         - $ref: '#/components/parameters/sizeParam'
@@ -51,6 +52,7 @@ paths:
         - Tipo de documento único
         - Campos obligatorios
         - Formato de email
+      operationId: create
       requestBody:
         required: true
         content:
@@ -74,7 +76,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Customer'
+                $ref: '#/components/schemas/CustomerDto'
           headers:
             Location:
               schema:
@@ -93,6 +95,7 @@ paths:
     get:
       tags: [Customers]
       summary: Obtener detalles de un cliente
+      operationId: findById
       parameters:
         - $ref: '#/components/parameters/customerIdParam'
       responses:
@@ -101,7 +104,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Customer'
+                $ref: '#/components/schemas/CustomerDto'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -109,6 +112,7 @@ paths:
       tags: [Customers]
       summary: Actualizar un cliente existente
       description: Actualiza la información de un cliente manteniendo el tipo y documento
+      operationId: update
       parameters:
         - $ref: '#/components/parameters/customerIdParam'
       requestBody:
@@ -123,7 +127,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Customer'
+                $ref: '#/components/schemas/CustomerDto'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -135,6 +139,7 @@ paths:
       description: |
         Elimina un cliente del sistema.
         Validar que no tenga productos asociados antes de eliminar.
+      operationId: delete
       parameters:
         - $ref: '#/components/parameters/customerIdParam'
       responses:
@@ -154,6 +159,7 @@ paths:
       tags: [CustomerValidation]
       summary: Validar documento único
       description: Verifica si un documento ya está registrado en el sistema
+      operationId: validateByDoc
       requestBody:
         required: true
         content:
@@ -184,7 +190,7 @@ paths:
 
 components:
   schemas:
-    Customer:
+    CustomerDto:
       type: object
       properties:
         id:
@@ -239,7 +245,7 @@ components:
 
     CustomerCreate:
       allOf:
-        - $ref: '#/components/schemas/Customer'
+        - $ref: '#/components/schemas/CustomerDto'
         - type: object
           properties:
             password:
@@ -299,7 +305,7 @@ components:
         content:
           type: array
           items:
-            $ref: '#/components/schemas/Customer'
+            $ref: '#/components/schemas/CustomerDto'
         page:
           type: integer
           example: 0

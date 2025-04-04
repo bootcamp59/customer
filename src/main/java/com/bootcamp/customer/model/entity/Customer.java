@@ -32,7 +32,6 @@ public class Customer {
     private String email;
     private String phone;
 
-
     @Field("account_ids")
     private Set<String> accountIds = new HashSet<>();
 
