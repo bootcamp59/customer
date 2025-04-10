@@ -31,7 +31,7 @@ public class Customer {
 
     private String email;
     private String phone;
-    private String perfil;
+    private PerfilType perfil;
 
     @Field("account_ids")
     private Set<String> accountIds = new HashSet<>();
@@ -47,6 +47,10 @@ public class Customer {
 
     public enum CustomerType {
         PERSONAL, BUSINESS
+    }
+
+    public enum PerfilType {
+        NORMAL, VIP
     }
 
 
