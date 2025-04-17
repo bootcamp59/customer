@@ -1,5 +1,6 @@
-package com.bootcamp.customer.model.entity;
+package com.bootcamp.customer.infrastructure.adapter.out.persistence.entity;
 
+import com.bootcamp.customer.domain.model.Customer;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,17 +12,16 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Document
+@Document(value = "customer")
 @Getter
 @Setter
 @Builder
-public class Customer {
-
+public class CustomerEntity {
     @Id
     private String id;
 
     private String name;
-    private CustomerType type;
+    private Customer.CustomerType type;
 
     @Field("doc_type")
     private String docType;
@@ -31,10 +31,8 @@ public class Customer {
 
     private String email;
     private String phone;
-    private PerfilType perfil;
-
-    @Field("account_ids")
-    private Set<String> accountIds = new HashSet<>();
+    private String address;
+    private Customer.PerfilType perfil;
 
     @Field("created_at")
     private LocalDateTime createdAt;
@@ -43,7 +41,10 @@ public class Customer {
     private LocalDateTime updatedAt;
 
     @Field("status")
-    private byte status;
+    private String status;
+
+    @Field("account_ids")
+    private Set<String> accountIds;
 
     public enum CustomerType {
         PERSONAL, BUSINESS
@@ -52,6 +53,4 @@ public class Customer {
     public enum PerfilType {
         NORMAL, VIP
     }
-
-
 }

@@ -13,16 +13,12 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 
 servers:
-  - url: https://api.bank.com/customer-service/v1
-    description: Servidor de producción
-  - url: http://localhost:8081/api/v1
+  - url: https://localhost:8085/api/v1/customer
     description: Servidor local de desarrollo
 
 tags:
   - name: Customers
     description: Operaciones con clientes bancarios
-  - name: CustomerValidation
-    description: Validaciones de información de clientes
 
 paths:
   /customers:
@@ -31,16 +27,16 @@ paths:
       summary: Listar todos los clientes
       description: Retorna una lista paginada de todos los clientes registrados
       operationId: findAll
-      parameters:
-        - $ref: '#/components/parameters/pageParam'
-        - $ref: '#/components/parameters/sizeParam'
       responses:
         '200':
           description: Lista de clientes obtenida exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CustomerPage'
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerDto'
+
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -91,13 +87,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /customers/{customerId}:
+  /customers/{docNumber}:
     get:
       tags: [Customers]
       summary: Obtener detalles de un cliente
       operationId: findById
       parameters:
-        - $ref: '#/components/parameters/customerIdParam'
+        - $ref: '#/components/parameters/docNumberParam'
       responses:
         '200':
           description: Detalles del cliente obtenidos exitosamente
@@ -114,7 +110,7 @@ paths:
       description: Actualiza la información de un cliente manteniendo el tipo y documento
       operationId: update
       parameters:
-        - $ref: '#/components/parameters/customerIdParam'
+        - $ref: '#/components/parameters/docNumberParam'
       requestBody:
         required: true
         content:
@@ -141,7 +137,7 @@ paths:
         Validar que no tenga productos asociados antes de eliminar.
       operationId: delete
       parameters:
-        - $ref: '#/components/parameters/customerIdParam'
+        - $ref: '#/components/parameters/docNumberParam'
       responses:
         '204':
           description: Cliente eliminado exitosamente
@@ -193,18 +189,13 @@ components:
     CustomerDto:
       type: object
       properties:
-        id:
-          type: string
-          format: uuid
-          readOnly: true
-          example: "5f8d8a7b2f4d4b1d9c3e3f1a"
         name:
           type: string
           example: "Empresa XYZ S.A."
         type:
           type: string
-          enum: [PERSONAL, BUSINESS]
-          example: "BUSINESS"
+          enum: [PERSONAL, EMPRESARIAL]
+          example: "EMPRESARIAL"
         docType:
           type: string
           enum: [DNI, RUC, CE, PASSPORT]
@@ -213,7 +204,9 @@ components:
           type: string
           example: "20123456789"
         address:
-          $ref: '#/components/schemas/Address'
+          type: string
+          example:  "Av. Olguin 4320 surco"
+
         email:
           type: string
           format: email
@@ -236,26 +229,22 @@ components:
           enum: [ACTIVE, INACTIVE, PENDING]
           default: "ACTIVE"
           example: "ACTIVE"
+        perfil:
+          type: string
+          enum: [MYPE, NORMAL, VIP]
+          default: "NORMAL"
+          example: "NORMAL"
       required:
         - name
         - type
         - docType
         - docNumber
         - email
+        - perfil
 
     CustomerCreate:
       allOf:
         - $ref: '#/components/schemas/CustomerDto'
-        - type: object
-          properties:
-            password:
-              type: string
-              format: password
-              minLength: 8
-              maxLength: 20
-              example: "Str0ngP@ss"
-          required:
-            - password
 
     CustomerUpdate:
       type: object
@@ -264,7 +253,9 @@ components:
           type: string
           example: "Empresa XYZ S.A. Renovada"
         address:
-          $ref: '#/components/schemas/Address'
+          type: string
+          example: "av olguin 4524 surco"
+
         email:
           type: string
           format: email
@@ -275,29 +266,9 @@ components:
         status:
           type: string
           enum: [ACTIVE, INACTIVE]
-
-    Address:
-      type: object
-      properties:
-        street:
+        perfil:
           type: string
-          example: "Av. Principal 123"
-        city:
-          type: string
-          example: "Lima"
-        state:
-          type: string
-          example: "Lima"
-        country:
-          type: string
-          example: "Perú"
-        postalCode:
-          type: string
-          example: "15001"
-      required:
-        - street
-        - city
-        - country
+          enum: [MYPE, NORMAL,VIP]
 
     CustomerPage:
       type: object
@@ -340,15 +311,15 @@ components:
           example: "/api/v1/customers"
 
   parameters:
-    customerIdParam:
-      name: customerId
+    docNumberParam:
+      name: docNumber
       in: path
       required: true
       description: ID único del cliente
       schema:
         type: string
-        format: uuid
-        example: "5f8d8a7b2f4d4b1d9c3e3f1a"
+        format: string
+        example: "46491946"
 
     pageParam:
       name: page
