@@ -33,7 +33,7 @@ public class Customer {
     }
 
     public enum PerfilType {
-        NORMAL, VIP, MYPE
+        NORMAL, VIP, PYME
     }
 
 }

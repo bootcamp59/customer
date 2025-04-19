@@ -91,7 +91,7 @@ paths:
     get:
       tags: [Customers]
       summary: Obtener detalles de un cliente
-      operationId: findById
+      operationId: findByDocument
       parameters:
         - $ref: '#/components/parameters/docNumberParam'
       responses:
@@ -231,7 +231,7 @@ components:
           example: "ACTIVE"
         perfil:
           type: string
-          enum: [MYPE, NORMAL, VIP]
+          enum: [PYME, NORMAL, VIP]
           default: "NORMAL"
           example: "NORMAL"
       required:
@@ -268,7 +268,7 @@ components:
           enum: [ACTIVE, INACTIVE]
         perfil:
           type: string
-          enum: [MYPE, NORMAL,VIP]
+          enum: [PYME, NORMAL,VIP]
 
     CustomerPage:
       type: object

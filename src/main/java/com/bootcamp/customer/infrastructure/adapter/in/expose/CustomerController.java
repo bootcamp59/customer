@@ -1,7 +1,6 @@
 package com.bootcamp.customer.infrastructure.adapter.in.expose;
 
 import com.bootcamp.customer.application.port.in.CustomerUseCase;
-import com.bootcamp.customer.domain.model.Customer;
 import com.bootcamp.customer.infrastructure.adapter.in.mapper.CustomerDtoMapper;
 import com.bootcamp.customer.rest.api.CustomersApi;
 import com.bootcamp.customer.rest.model.*;
@@ -14,8 +13,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.print.attribute.standard.Media;
-
 @RestController
 @RequestMapping("/api/v1/customer")
 @RequiredArgsConstructor
@@ -26,7 +23,9 @@ public class CustomerController implements CustomersApi{
     @Override
     public Mono<ResponseEntity<CustomerDto>> create(Mono<CustomerCreate> customerCreate, ServerWebExchange exchange) {
         return customerCreate
-            .flatMap(create -> usecase.create(CustomerDtoMapper.toModel(create)))
+            .flatMap(create -> {
+                return usecase.create(CustomerDtoMapper.toModel(create));
+            })
             .map(model -> ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(CustomerDtoMapper.toDto(model)));
@@ -50,8 +49,11 @@ public class CustomerController implements CustomersApi{
 
 
     @Override
-    public Mono<ResponseEntity<CustomerDto>> findById(String docNumber, ServerWebExchange exchange) {
-        return null;
+    public Mono<ResponseEntity<CustomerDto>> findByDocument(String docNumber, ServerWebExchange exchange) {
+        return usecase.findByDocNumber(docNumber)
+            .map(res -> ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(CustomerDtoMapper.toDto(res)));
     }
 
     @Override
