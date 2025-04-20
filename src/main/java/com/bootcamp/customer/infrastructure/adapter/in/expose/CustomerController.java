@@ -1,14 +1,14 @@
 package com.bootcamp.customer.infrastructure.adapter.in.expose;
 
 import com.bootcamp.customer.application.port.in.CustomerUseCase;
+import com.bootcamp.customer.domain.dto.ConsolidateProductoSummary;
 import com.bootcamp.customer.infrastructure.adapter.in.mapper.CustomerDtoMapper;
 import com.bootcamp.customer.rest.api.CustomersApi;
 import com.bootcamp.customer.rest.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -65,4 +65,14 @@ public class CustomerController implements CustomersApi{
     public Mono<ResponseEntity<ValidateByDoc200Response>> validateByDoc(Mono<ValidateByDocRequest> validateByDocRequest, ServerWebExchange exchange) {
         return null;
     }
+
+    @GetMapping("{document}/consolidate-summary")
+    public Mono<ResponseEntity<ConsolidateProductoSummary>> productConsolidatedSummary(@PathVariable String document, ServerWebExchange exchange) {
+        return usecase.productConsolidatedSummary(document)
+                .map( res -> ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(res));
+    }
+
+
 }

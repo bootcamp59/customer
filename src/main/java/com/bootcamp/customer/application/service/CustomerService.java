@@ -2,14 +2,19 @@ package com.bootcamp.customer.application.service;
 
 import com.bootcamp.customer.application.port.in.CustomerUseCase;
 import com.bootcamp.customer.application.port.out.CustomerRepositoryPort;
+import com.bootcamp.customer.domain.dto.AccountDto;
+import com.bootcamp.customer.domain.dto.ConsolidateProductoSummary;
+import com.bootcamp.customer.domain.dto.CreditDto;
 import com.bootcamp.customer.domain.model.Customer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,6 +23,7 @@ import java.util.Optional;
 public class CustomerService implements CustomerUseCase {
 
     private final CustomerRepositoryPort port;
+    private final WebClient.Builder webClientBuilder;
 
     @Override
     public Mono<Customer> findByDocNumber(String docNumber) {
@@ -64,6 +70,27 @@ public class CustomerService implements CustomerUseCase {
             .switchIfEmpty( Mono.error(new RuntimeException("customer not found")));
     }
 
+    @Override
+    public Mono<ConsolidateProductoSummary> productConsolidatedSummary(String document) {
+        var accountResp = getAccount("http://localhost:8086/api/v1/account/"+ document);
+        var creditResp = getCredit("http://localhost:8087/api/v1/credit/customer/"+ document);
+        var clienteResp = port.findByDocNumber(document);
+
+        return Mono.zip(accountResp, creditResp, clienteResp)
+            .map(tuple3 -> {
+                var accounts = tuple3.getT1();
+                var credits = tuple3.getT2();
+                var customer = tuple3.getT3();
+
+                return ConsolidateProductoSummary.builder()
+                    .name(customer.getName())
+                    .document(customer.getDocNumber())
+                    .accounts(accounts)
+                    .credits(credits)
+                    .build();
+            });
+    }
+
     private void mergeNonNullValues(Customer target, Customer source) {
         Optional.ofNullable(source.getName()).ifPresent(target::setName);
         Optional.ofNullable(source.getDocType()).ifPresent(target::setDocType);
@@ -93,5 +120,31 @@ public class CustomerService implements CustomerUseCase {
 
                     return Mono.just(customer);
                 });
+    }
+
+    private Mono<List<AccountDto>> getAccount(String url){
+        return webClientBuilder.build()
+                .get()
+                .uri(url)
+                .retrieve()
+                .bodyToFlux(AccountDto.class)
+                .collectList()
+                .doOnNext(f -> {
+                    log.info("conexion exitosa al serivicio: {}", url + f);
+                })
+                .doOnError( err ->  log.info("no se logro la conexion al serivicio: {}", url));
+    }
+
+    private Mono<List<CreditDto>> getCredit(String url){
+        return webClientBuilder.build()
+                .get()
+                .uri(url)
+                .retrieve()
+                .bodyToFlux(CreditDto.class)
+                .collectList()
+                .doOnNext(f -> {
+                    log.info("conexion exitosa al serivicio: {}", url + f);
+                })
+                .doOnError( err ->  log.info("no se logro la conexion al serivicio: {}", url));
     }
 }
