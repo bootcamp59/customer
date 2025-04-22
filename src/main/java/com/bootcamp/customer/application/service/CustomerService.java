@@ -72,8 +72,8 @@ public class CustomerService implements CustomerUseCase {
 
     @Override
     public Mono<ConsolidateProductoSummary> productConsolidatedSummary(String document) {
-        var accountResp = getAccount("http://localhost:8086/api/v1/account/"+ document);
-        var creditResp = getCredit("http://localhost:8087/api/v1/credit/customer/"+ document);
+        var accountResp = getAccount("http://ACCOUNT/api/v1/account/"+ document);
+        var creditResp = getCredit("http://CREDIT/api/v1/credit/customer/"+ document);
         var clienteResp = port.findByDocNumber(document);
 
         return Mono.zip(accountResp, creditResp, clienteResp)
