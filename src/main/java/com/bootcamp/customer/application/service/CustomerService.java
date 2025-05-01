@@ -1,8 +1,8 @@
 package com.bootcamp.customer.application.service;
 
 import com.bootcamp.customer.application.port.in.CustomerUseCase;
-import com.bootcamp.customer.application.port.out.AccountServicePort;
-import com.bootcamp.customer.application.port.out.CreditServicePort;
+import com.bootcamp.customer.application.port.out.AccountServiceClientPort;
+import com.bootcamp.customer.application.port.out.CreditServiceClientPort;
 import com.bootcamp.customer.application.port.out.CustomerRepositoryPort;
 import com.bootcamp.customer.domain.dto.ConsolidateProductoSummary;
 import com.bootcamp.customer.domain.model.Customer;
@@ -20,8 +20,8 @@ import java.util.Optional;
 public class CustomerService implements CustomerUseCase {
 
     private final CustomerRepositoryPort port;
-    private final AccountServicePort accountServicePort;
-    private final CreditServicePort creditServicePort;
+    private final AccountServiceClientPort accountServiceClientPort;
+    private final CreditServiceClientPort creditServiceClientPort;
 
     @Override
     public Mono<Customer> findByDocNumber(String docNumber) {
@@ -70,8 +70,8 @@ public class CustomerService implements CustomerUseCase {
 
     @Override
     public Mono<ConsolidateProductoSummary> productConsolidatedSummary(String document) {
-        var accountResp = accountServicePort.getAccountByDocument(document);
-        var creditResp = creditServicePort.getCreditByDocument(document);
+        var accountResp = accountServiceClientPort.getAccountByDocument(document);
+        var creditResp = creditServiceClientPort.getCreditByDocument(document);
         var clienteResp = port.findByDocNumber(document);
 
         return Mono.zip(accountResp, creditResp, clienteResp)

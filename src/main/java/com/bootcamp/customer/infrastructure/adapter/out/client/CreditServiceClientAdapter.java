@@ -1,6 +1,6 @@
 package com.bootcamp.customer.infrastructure.adapter.out.client;
 
-import com.bootcamp.customer.application.port.out.CreditServicePort;
+import com.bootcamp.customer.application.port.out.CreditServiceClientPort;
 import com.bootcamp.customer.domain.dto.CreditDto;
 import com.bootcamp.customer.infrastructure.config.CustomerProperties;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +14,9 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CreditServiceAdapter implements CreditServicePort {
+public class CreditServiceClientAdapter implements CreditServiceClientPort {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
     private final CustomerProperties properties;
 
     @Override
@@ -24,7 +24,7 @@ public class CreditServiceAdapter implements CreditServicePort {
 
         var url = properties.getMsCreditApi() + "/" + documentNumber;
 
-        return webClientBuilder.build()
+        return webClient
                 .get()
                 .uri(url)
                 .retrieve()

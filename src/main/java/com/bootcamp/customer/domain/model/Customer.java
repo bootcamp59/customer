@@ -11,6 +11,7 @@ import java.util.Set;
 @Builder
 public class Customer {
 
+    private String id;
     private String name;
     private CustomerType type;
 

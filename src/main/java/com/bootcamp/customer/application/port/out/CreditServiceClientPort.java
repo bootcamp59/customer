@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public interface CreditServicePort {
+public interface CreditServiceClientPort {
 
     Mono<List<CreditDto>> getCreditByDocument(String documentNumber);
 }

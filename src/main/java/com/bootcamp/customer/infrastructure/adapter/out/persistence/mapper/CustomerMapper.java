@@ -7,6 +7,7 @@ public class CustomerMapper {
 
     public static Customer toModel(CustomerEntity entity){
         return Customer.builder()
+                .id(entity.getId())
                 .name(entity.getName())
                 .docType(entity.getDocType())
                 .docNumber(entity.getDocNumber())
@@ -23,6 +24,7 @@ public class CustomerMapper {
 
     public static CustomerEntity toEntity(Customer model){
         return CustomerEntity.builder()
+                .id(model.getId())
                 .name(model.getName())
                 .docType(model.getDocType())
                 .docNumber(model.getDocNumber())

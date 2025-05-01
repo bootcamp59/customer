@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-public interface AccountServicePort {
+public interface AccountServiceClientPort {
 
     Mono<List<AccountDto>> getAccountByDocument(String documentNumber);
 }

@@ -45,7 +45,8 @@ public class CustomerAdapter implements CustomerRepositoryPort {
 
     @Override
     public Mono<Customer> delete(String id) {
-        return null;
+        return repository.deleteById(id)
+            .thenReturn(Customer.builder().id(id).build());
     }
 
     @Override
