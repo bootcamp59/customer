@@ -32,6 +32,7 @@
 		<springdoc-openapi.version>2.8.6</springdoc-openapi.version>
 		<jackson-nullable.version>0.2.6</jackson-nullable.version>
 		<spring-cloud.version>2024.0.1</spring-cloud.version>
+		<checkstyle.plugin.version>3.2.2</checkstyle.plugin.version>
 	</properties>
 	<dependencies>
 
