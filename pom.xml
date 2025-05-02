@@ -103,6 +103,15 @@
 			<artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver -->
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>mockwebserver</artifactId>
+			<version>4.12.0</version>
+			<scope>test</scope>
+		</dependency>
+
+
 	</dependencies>
 
 	<dependencyManagement>
@@ -194,6 +203,11 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<excludes>
+						<exclude>com/bootcamp/customer/generated/**</exclude> <!-- Ajusta al paquete real -->
+					</excludes>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -9,11 +9,10 @@ import com.bootcamp.customer.domain.model.Customer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -154,4 +153,76 @@ public class CustomerServiceTest {
             )
             .verifyComplete();
     }
+
+    @Test
+    void testCreateCustomer_missingType() {
+        Customer input = Customer.builder()
+                .docNumber("123")
+                .type(null)
+                .build();
+
+        Mockito.when(customerRepositoryPort.existsByDocNumber("123"))
+                .thenReturn(Mono.just(false));
+
+        StepVerifier.create(service.create(input))
+                .expectErrorMessage("Customer type is required")
+                .verify();
+    }
+
+    @Test
+    void testCreateCustomer_missingDocNumber() {
+        Customer input = Customer.builder()
+                .docNumber(null)
+                .type(Customer.CustomerType.PERSONAL)
+                .build();
+
+        Mockito.when(customerRepositoryPort.existsByDocNumber(null))
+                .thenReturn(Mono.just(false));
+
+        StepVerifier.create(service.create(input))
+                .expectErrorMessage("Document number is required")
+                .verify();
+    }
+
+    @Test
+    void testCreateCustomer_emptyDocNumber() {
+        Customer input = Customer.builder()
+                .docNumber("")
+                .type(Customer.CustomerType.PERSONAL)
+                .build();
+
+        Mockito.when(customerRepositoryPort.existsByDocNumber(""))
+                .thenReturn(Mono.just(false));
+
+        StepVerifier.create(service.create(input))
+                .expectErrorMessage("Document number is required")
+                .verify();
+    }
+
+    @Test
+    void testDeleteCustomer_notFound() {
+        Mockito.when(customerRepositoryPort.findByDocNumber("999"))
+                .thenReturn(Mono.empty());
+
+        StepVerifier.create(service.delete("999"))
+                .expectErrorMessage("customer not found")
+                .verify();
+    }
+
+
+    @Test
+    void testFindAllCustomers() {
+        Customer customer1 = Customer.builder().docNumber("111").build();
+        Customer customer2 = Customer.builder().docNumber("222").build();
+
+        Mockito.when(customerRepositoryPort.findAll())
+                .thenReturn(Flux.just(customer1, customer2));
+
+
+        StepVerifier.create(service.findAll())
+                .expectNext(customer1)
+                .expectNext(customer2)
+                .verifyComplete();
+    }
+
 }

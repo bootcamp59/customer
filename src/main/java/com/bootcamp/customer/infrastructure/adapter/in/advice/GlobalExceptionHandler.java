@@ -1,7 +1,6 @@
-package com.bootcamp.customer.advice;
+package com.bootcamp.customer.infrastructure.adapter.in.advice;
 
 
-import com.bootcamp.customer.error.AccountErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,12 +15,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<AccountErrorResponse> handleIllegalArgument(IllegalArgumentException ex, WebRequest request) {
         AccountErrorResponse errorResponse = AccountErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
-                .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
-                .error(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
                 .message(ex.getMessage())
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
 
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 }
